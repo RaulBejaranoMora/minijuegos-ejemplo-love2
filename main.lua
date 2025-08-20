@@ -1,6 +1,7 @@
 local menu = {
     {"Crazy Basket", "crazybasket"},
-    -- Puedes agregar más mini-juegos aquí, por ejemplo:
+    {"Crazy Racing", "crazyracing"},
+    -- Se puede agregar más mini-juegos aquí, por ejemplo:
     -- {"Otro Juego", "otro_juego"}
 }
 local selected = 1
@@ -9,11 +10,15 @@ local state = "menu"
 -- Referencia a los módulos de mini-juegos
 local games = {}
 
+-- Variables de color para el menú
+local COLOR_BG = {0, 0, 0}
+local COLOR_TEXT = {255, 255, 255}
+local COLOR_SELECTED = {255, 255, 0}
+
 function resetMenu()
     love.window.setMode(800, 600) -- Dimensiones del menú
     love.window.setTitle("Menú Principal")
-    love.graphics.setFont(love.graphics.newFont(24)) 
-    -- Tamaño de letra para el menú
+    love.graphics.setFont(love.graphics.newFont(24)) -- Tamaño de letra para el menú
 end
 
 function love.load()
@@ -59,19 +64,19 @@ end
 
 function love.draw()
     if state == "menu" then
-        love.graphics.setBackgroundColor(30, 30, 30)
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.setBackgroundColor(COLOR_BG)
+        love.graphics.setColor(COLOR_TEXT)
         love.graphics.printf("Selecciona un mini-juego:", 0, 100, love.graphics.getWidth(), "center")
         for i, item in ipairs(menu) do
             if i == selected then
-                love.graphics.setColor(255, 255, 0)
+                love.graphics.setColor(COLOR_SELECTED)
             else
-                love.graphics.setColor(255, 255, 255)
+                love.graphics.setColor(COLOR_TEXT)
             end
             love.graphics.printf(item[1], 0, 150 + i * 40, love.graphics.getWidth(), "center")
         end
-        love.graphics.setColor(200, 200, 200)
-        love.graphics.printf("Usa ↑ ↓ para navegar, Enter para seleccionar", 0, 350, love.graphics.getWidth(), "center")
+        love.graphics.setColor(COLOR_TEXT)
+        love.graphics.printf("Usa teclas arriba/abajo para navegar, Enter para seleccionar", 0, 350, love.graphics.getWidth(), "center")
     elseif games[state] and games[state].draw then
         games[state].draw()
     end

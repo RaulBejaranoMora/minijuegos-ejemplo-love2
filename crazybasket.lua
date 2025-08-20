@@ -1,15 +1,17 @@
 local crazybasket = {}
 
 -- Variables locales para el estado del juego
-local world, bg, basketball, basket, message, mouseX, sum, points, time, R, G, B, goal, endgame, objects
+local world, bg, basketball, basket, message, mouseX, sum, points, time, R, G, B, goal, endgame, objects, resource_direction
+
+resource_direction = "resource/crazybasket/"
 
 function crazybasket.start()
   love.physics.setMeter(64) -- Define cuántos píxeles representan un metro en nuestro mundo físico
   -- Crea un mundo con gravedad horizontal 0 y gravedad vertical 9.81*64 (escala a píxeles)
   world = love.physics.newWorld(0, 9.81 * 64, true) -- El factor 9.81*64 convierte la gravedad de metros a píxeles
-  bg = love.graphics.newImage("resource/bg.png") -- Carga la imagen de fondo del juego
-  basketball = love.graphics.newImage("resource/ball.png") -- Carga la imagen del balón de baloncesto
-  basket = love.graphics.newImage("resource/canasta.png") -- Carga la imagen de la canasta
+  bg = love.graphics.newImage(resource_direction .."bg.png") -- Carga la imagen de fondo del juego
+  basketball = love.graphics.newImage(resource_direction .."ball.png") -- Carga la imagen del balón de baloncesto
+  basket = love.graphics.newImage(resource_direction .."canasta.png") -- Carga la imagen de la canasta
   message = "" -- Almacena el mensaje que se mostrará al finalizar el juego
   mouseX = "" -- Almacena la posición actual del mouse en el eje X
   sum = 0 -- Acumulador para calcular la fuerza de impulso del balón
@@ -21,7 +23,7 @@ function crazybasket.start()
   goal = false -- Indica si se ha anotado un punto recientemente
   endgame = false -- Indica si el juego ha terminado
   love.audio.stop() -- Detiene cualquier audio que esté reproduciéndose
-  love.audio.play(love.audio.newSource("resource/basket-rock.mp3", "stream")) -- Inicia la música de fondo del juego
+  love.audio.play(love.audio.newSource(resource_direction .."basket-rock.mp3", "stream")) -- Inicia la música de fondo del juego
 
   objects = {} -- Tabla para almacenar todos los objetos físicos del juego (similar a una colección de clases)
 
@@ -51,7 +53,7 @@ function crazybasket.start()
   love.graphics.setBackgroundColor(104, 136, 248) -- Establece el color de fondo en azul celeste (valores RGB)
   love.window.setMode(1000, 424) -- Define el tamaño de la ventana: 1000 píxeles de ancho por 424 de alto
   love.window.setTitle("Crazy Basket") -- Establece el título de la ventana del juego
-  love.window.setIcon(love.image.newImageData("resource/ball.png")) -- Usa la imagen del balón como icono de la ventana
+  love.window.setIcon(love.image.newImageData(resource_direction .. "ball.png")) -- Usa la imagen del balón como icono de la ventana
 
   love.graphics.setFont(love.graphics.newFont(42)) -- Configura la fuente del texto con tamaño 42
 end
@@ -95,7 +97,7 @@ function crazybasket.update(dt)
       B = 0
 
       -- Reproduce el sonido de bocina final y muestra el mensaje de fin de juego
-      sfx = love.audio.newSource("resource/buzzer.mp3", "static")
+      sfx = love.audio.newSource(resource_direction .."buzzer.mp3", "static")
       love.audio.play(sfx)
       message = "GAME OVER"
       mouseX = 0 -- Reinicia la posición del ratón
