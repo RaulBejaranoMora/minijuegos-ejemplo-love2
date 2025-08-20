@@ -1,10 +1,15 @@
-function love.load()
+local crazybasket = {}
+
+-- Variables locales para el estado del juego
+local world, bg, basketball, basket, message, mouseX, sum, points, time, R, G, B, goal, endgame, objects
+
+function crazybasket.start()
   love.physics.setMeter(64) -- Define cuántos píxeles representan un metro en nuestro mundo físico
   -- Crea un mundo con gravedad horizontal 0 y gravedad vertical 9.81*64 (escala a píxeles)
   world = love.physics.newWorld(0, 9.81 * 64, true) -- El factor 9.81*64 convierte la gravedad de metros a píxeles
-  bg = love.graphics.newImage("bg.png") -- Carga la imagen de fondo del juego
-  basketball = love.graphics.newImage("ball.png") -- Carga la imagen del balón de baloncesto
-  basket = love.graphics.newImage("canasta.png") -- Carga la imagen de la canasta
+  bg = love.graphics.newImage("resource/bg.png") -- Carga la imagen de fondo del juego
+  basketball = love.graphics.newImage("resource/ball.png") -- Carga la imagen del balón de baloncesto
+  basket = love.graphics.newImage("resource/canasta.png") -- Carga la imagen de la canasta
   message = "" -- Almacena el mensaje que se mostrará al finalizar el juego
   mouseX = "" -- Almacena la posición actual del mouse en el eje X
   sum = 0 -- Acumulador para calcular la fuerza de impulso del balón
@@ -16,7 +21,7 @@ function love.load()
   goal = false -- Indica si se ha anotado un punto recientemente
   endgame = false -- Indica si el juego ha terminado
   love.audio.stop() -- Detiene cualquier audio que esté reproduciéndose
-  love.audio.play(love.audio.newSource("basket-rock.mp3", "stream")) -- Inicia la música de fondo del juego
+  love.audio.play(love.audio.newSource("resource/basket-rock.mp3", "stream")) -- Inicia la música de fondo del juego
 
   objects = {} -- Tabla para almacenar todos los objetos físicos del juego (similar a una colección de clases)
 
@@ -27,7 +32,7 @@ function love.load()
   objects.ground.shape = love.physics.newRectangleShape(1000, 50) -- Define la forma como un rectángulo de 1000x50 píxeles
   objects.ground.fixture = love.physics.newFixture(objects.ground.body, objects.ground.shape) -- Asocia la forma al cuerpo físico
 
-  createBall() -- Llama a la función que crea e inicializa el balón
+  crazybasket.createBall() -- Llama a la función que crea e inicializa el balón
 
   -- Creación de los dos objetos que forman los bordes del aro de baloncesto
   objects.block1 = {}
@@ -46,12 +51,12 @@ function love.load()
   love.graphics.setBackgroundColor(104, 136, 248) -- Establece el color de fondo en azul celeste (valores RGB)
   love.window.setMode(1000, 424) -- Define el tamaño de la ventana: 1000 píxeles de ancho por 424 de alto
   love.window.setTitle("Crazy Basket") -- Establece el título de la ventana del juego
-  love.window.setIcon(love.image.newImageData("ball.png")) -- Usa la imagen del balón como icono de la ventana
+  love.window.setIcon(love.image.newImageData("resource/ball.png")) -- Usa la imagen del balón como icono de la ventana
 
   love.graphics.setFont(love.graphics.newFont(42)) -- Configura la fuente del texto con tamaño 42
 end
 
-function love.update(dt)
+function crazybasket.update(dt)
   world:update(dt) -- Actualiza la simulación física del mundo en cada fotograma
 
   if time > 1 then -- Si queda tiempo de juego (más de 1 segundo)
@@ -61,7 +66,7 @@ function love.update(dt)
     if love.mouse.isDown(1) then -- Si se está presionando el botón izquierdo del ratón
         sum = sum + 20 -- Incrementa el acumulador que determina la fuerza de lanzamiento
         objects.ball.fixture:destroy() -- Elimina el balón actual para evitar múltiples balones en escena
-        createBall() -- Crea un nuevo balón en la posición inicial
+        crazybasket.createBall() -- Crea un nuevo balón en la posición inicial
         objects.ball.body:applyLinearImpulse(sum, -mouseX) -- Aplica un impulso al balón: fuerza horizontal (sum) y vertical (-mouseX)
         goal = false -- Reinicia el estado de anotación
     else
@@ -90,7 +95,7 @@ function love.update(dt)
       B = 0
 
       -- Reproduce el sonido de bocina final y muestra el mensaje de fin de juego
-      sfx = love.audio.newSource("buzzer.mp3", "static")
+      sfx = love.audio.newSource("resource/buzzer.mp3", "static")
       love.audio.play(sfx)
       message = "GAME OVER"
       mouseX = 0 -- Reinicia la posición del ratón
@@ -99,13 +104,13 @@ function love.update(dt)
   end
 end
 
-function love.draw()
+function crazybasket.draw()
   love.graphics.draw(bg, 0, 0) -- Dibuja la imagen de fondo en la posición (0,0)
 
   -- Muestra la información de puntos y tiempo restante en pantalla
   love.graphics.setColor(255, 255, 255) -- Establece color blanco para el texto
-  love.graphics.print(points, 800, 25) -- Muestra el puntaje actual
-  love.graphics.print(math.floor(time) .. "s", 825, 25) -- Muestra el tiempo restante en segundos
+  love.graphics.print(points, 400, 15) -- Muestra el puntaje actual
+  love.graphics.print(math.floor(time) .. "s", 600, 15) -- Muestra el tiempo restante en segundos
   love.graphics.setColor(R, G, B) -- Aplica el color actual del juego (normal o rojo al finalizar)
 
   -- Dibuja el balón en su posición física actual con la rotación correcta
@@ -129,9 +134,11 @@ function love.draw()
 
   -- Restaura el color actual del juego
   love.graphics.setColor(R, G, B)
+  -- Cambia la fuente a tamaño pequeño y muestra el texto en la esquina superior izquierda
+  love.graphics.print("Menu(Esc)", 10, 15)
 end
 
-function createBall()
+function crazybasket.createBall()
   -- Crea el objeto balón con sus propiedades físicas
   objects.ball = {}
   -- Posiciona el balón en la esquina inferior izquierda de la pantalla
@@ -141,3 +148,14 @@ function createBall()
   objects.ball.fixture = love.physics.newFixture(objects.ball.body, objects.ball.shape, 1)
   objects.ball.fixture:setRestitution(0.9) -- Establece el coeficiente de restitución para simular rebotes realistas
 end
+
+function crazybasket.finish()
+  -- Detiene cualquier audio que esté sonando
+  love.audio.stop()
+  -- Limpia el mensaje de fin de juego
+  message = ""
+  -- Permite que el juego se reinicie correctamente
+  endgame = false
+end
+
+return crazybasket
