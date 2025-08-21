@@ -25,10 +25,8 @@ end
 function crazyrace.createCar()
   -- Crea el objeto carro con sus propiedades físicas
   objects.car = {}
-  -- Posiciona el carro en el carril central
-  objects.car.body = love.physics.newBody(world, lanes[car_lane_index], 382 - 70, "dynamic") -- Crea un cuerpo dinámico (afectado por física)
-  objects.car.shape = love.physics.newRectangleShape(80, 40) -- Define la forma como un rectángulo de 80x40 píxeles
-  -- Asocia la forma al cuerpo con una densidad de 1
+  objects.car.body = love.physics.newBody(world, lanes[car_lane_index], 306, "dynamic")
+  objects.car.shape = love.physics.newRectangleShape(71, 131)
   objects.car.fixture = love.physics.newFixture(objects.car.body, objects.car.shape, 1)
   objects.car.fixture:setRestitution(0) -- Sin rebote
   objects.car.body:setFixedRotation(true) -- No rota
@@ -50,13 +48,6 @@ function crazyrace.start()
 
   objects = {} -- Tabla para almacenar todos los objetos físicos del juego (similar a una colección de clases)
 
-  -- Creación del suelo del juego
-  objects.ground = {}
-  -- Crea un cuerpo físico para el suelo, posicionado en el centro inferior de la pantalla
-  objects.ground.body = love.physics.newBody(world, 1000 / 2, 382 - 50 / 2)
-  objects.ground.shape = love.physics.newRectangleShape(1000, 50) -- Define la forma como un rectángulo de 1000x50 píxeles
-  objects.ground.fixture = love.physics.newFixture(objects.ground.body, objects.ground.shape) -- Asocia la forma al cuerpo físico
-
   loadCarImages() -- <--- Carga las imágenes de carros para obstáculos
   crazyrace.createCar()
   crazyrace.createObstacles()
@@ -68,6 +59,8 @@ function crazyrace.start()
   love.window.setIcon(love.image.newImageData(resource_direction .. "car_blue.png")) -- Usa la imagen del balón como icono de la ventana
 
   love.graphics.setFont(love.graphics.newFont(42)) -- Configura la fuente del texto con tamaño 42
+
+  world:setCallbacks(beginContact)
 end
 
 function crazyrace.createObstacles()
@@ -81,13 +74,14 @@ function crazyrace.createObstacles()
   end
   -- Solo coloca obstáculos en los dos primeros carriles mezclados
   for i = 1, 2 do
-    local obstacle = {}
+    obstacle = {}
+    obstacle.image = car_images[math.random(1, #car_images)]
+    obsWidth = obstacle.image:getWidth()
+    obsHeight = obstacle.image:getHeight()
     obstacle.body = love.physics.newBody(world, lanes[lane_indices[i]], math.random(-200, 0), "static")
-    obstacle.shape = love.physics.newRectangleShape(80, 40)
+    obstacle.shape = love.physics.newRectangleShape(obsWidth, obsHeight)
     obstacle.fixture = love.physics.newFixture(obstacle.body, obstacle.shape)
     obstacle.fixture:setRestitution(0)
-    -- Selecciona una imagen aleatoria de carro para este obstáculo
-    obstacle.image = car_images[math.random(1, #car_images)]
     table.insert(objects.obstacles, obstacle)
   end
 end
@@ -130,17 +124,17 @@ function crazyrace.update(dt)
 
     -- Mueve cada obstáculo y verifica colisiones
     for _, obs in ipairs(objects.obstacles) do
-      local x, y = obs.body:getPosition()
+      x, y = obs.body:getPosition()
       -- Desplaza el obstáculo hacia abajo según la velocidad
       obs.body:setY(y + speedFactor * dt)
       -- Si el obstáculo sale de la pantalla, lo reposiciona arriba con nueva posición X aleatoria
       if y > 382 then
         -- Cuando el obstáculo sale de pantalla, elige un carril libre
         -- Primero, determina los carriles ocupados
-        local occupied = {}
+        occupied = {}
         for _, o in ipairs(objects.obstacles) do
           if o ~= obs then
-            local ox = o.body:getX()
+            ox = o.body:getX()
             for i, lane_x in ipairs(lanes) do
               if math.abs(ox - lane_x) < 1 then
                 occupied[i] = true
@@ -149,23 +143,17 @@ function crazyrace.update(dt)
           end
         end
         -- Busca carriles libres
-        local free_lanes = {}
+        free_lanes = {}
         for i, lane_x in ipairs(lanes) do
           if not occupied[i] then
             table.insert(free_lanes, lane_x)
           end
         end
         -- Elige aleatoriamente uno de los carriles libres
-        local new_x = free_lanes[math.random(1, #free_lanes)]
+        new_x = free_lanes[math.random(1, #free_lanes)]
         obs.body:setPosition(new_x, -40)
         -- Selecciona una nueva imagen aleatoria para el obstáculo
         obs.image = car_images[math.random(1, #car_images)]
-      end
-      -- Colisión simple
-      local carX, carY = objects.car.body:getPosition()
-      if math.abs(carX - x) < 60 and math.abs(carY - y) < 30 then
-        endgame = true
-        message = "¡Chocaste! Fin del juego.\nMetros recorridos: " .. math.floor(meters)
       end
     end
 
@@ -206,7 +194,7 @@ function crazyrace.draw()
   love.graphics.printf(instruction, boxX, boxY + 20, boxWidth, "center")
   love.graphics.setColor(255,255,255)
 
-  -- Muestra mensaje si termina el juegogi
+  -- Muestra mensaje si termina el juego
   love.graphics.setFont(love.graphics.newFont(32))
   love.graphics.printf(message, 0, 50, 1000, "center")
   if endgame then
@@ -223,6 +211,18 @@ function crazyrace.finish()
   message = ""
   -- Permite que el juego se reinicie correctamente
   endgame = false
+end
+
+-- Añade esta función para detectar colisiones físicas
+function beginContact(a, b, coll)
+  if (a == objects.car.fixture or b == objects.car.fixture) and not endgame then
+    for _, obs in ipairs(objects.obstacles) do
+      if a == obs.fixture or b == obs.fixture then
+        endgame = true
+        message = "¡Chocaste! Fin del juego.\nMetros recorridos: " .. math.floor(meters)
+      end
+    end
+  end
 end
 
 return crazyrace
