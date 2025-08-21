@@ -1,6 +1,6 @@
 local menu = {
     {"Crazy Basket", "crazybasket"},
-    {"Crazy Racing", "crazyracing"},
+    {"Crazy Race", "crazyrace"},
     -- Se puede agregar más mini-juegos aquí, por ejemplo:
     -- {"Otro Juego", "otro_juego"}
 }
@@ -23,7 +23,8 @@ end
 
 function love.load()
     games.crazybasket = require("crazybasket")
-    -- Si tienes más mini-juegos, cárgalos aquí
+    games.crazyrace = require("crazyrace")
+    -- Para agregar más mini-juegos, cárgalos aquí
     resetMenu()
 end
 
@@ -55,9 +56,7 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-    if state == "menu" then
-        -- No hace nada en el menú
-    elseif games[state] and games[state].update then
+    if state ~= "menu" and games[state] and games[state].update then
         games[state].update(dt)
     end
 end
