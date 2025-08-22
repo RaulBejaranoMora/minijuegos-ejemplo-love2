@@ -6,7 +6,7 @@ local car_lane_index = 2 -- El carro inicia en el carril central
 local objects, world, bg, car, cars, meters, speed, message, endgame, speedFactor
 local resource_direction = "resource/crazyrace/"
 local lastKeyReleased = nil -- Variable para guardar la última tecla soltada
-local baseSpeed = 200
+local baseSpeed = 100
 
 -- Cargar imágenes de carros para obstáculos
 local car_images = {}
@@ -65,7 +65,6 @@ end
 
 function crazyrace.createObstacles()
   objects.obstacles = {}
-  -- Selecciona aleatoriamente 2 carriles distintos para los obstáculos
   local lane_indices = {1, 2, 3}
   -- Mezcla los índices de los carriles
   for i = #lane_indices, 2, -1 do
@@ -78,7 +77,8 @@ function crazyrace.createObstacles()
     obstacle.image = car_images[math.random(1, #car_images)]
     obsWidth = obstacle.image:getWidth()
     obsHeight = obstacle.image:getHeight()
-    obstacle.body = love.physics.newBody(world, lanes[lane_indices[i]], math.random(-200, 0), "static")
+    -- Posiciona los obstáculos más arriba para evitar colisión inmediata
+    obstacle.body = love.physics.newBody(world, lanes[lane_indices[i]], math.random(-150, -50), "static")
     obstacle.shape = love.physics.newRectangleShape(obsWidth, obsHeight)
     obstacle.fixture = love.physics.newFixture(obstacle.body, obstacle.shape)
     obstacle.fixture:setRestitution(0)
